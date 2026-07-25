@@ -1,0 +1,22 @@
+{
+  "enabledPlugins": {
+    "pyright-lsp@claude-plugins-official": true
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python",
+            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/auto_commit_push.py"],
+            "statusMessage": "Auto-commit (auto mode only)...",
+            "timeout": 30,
+            "asyncRewake": true,
+            "rewakeSummary": "Auto-commit push conflict"
+          }
+        ]
+      }
+    ]
+  }
+}

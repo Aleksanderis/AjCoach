@@ -1,0 +1,395 @@
+{% extends "layout.html" %}
+{% block title %}Workout{% if session_info %} — {{ session_info.day }}{% endif %}{% endblock %}
+
+{% block head %}
+<style>
+  /* ── date nav ── */
+  .date-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0 0 1.5rem;
+  }
+  .date-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 1.1rem;
+    transition: all 0.15s;
+  }
+  .date-arrow:hover { border-color: var(--accent); color: var(--accent); }
+  .date-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    font-size: 0.85rem;
+    padding: 0.3rem 0.6rem;
+    cursor: pointer;
+  }
+  .date-input:focus { outline: none; border-color: var(--accent); }
+
+  /* ── progress bar ── */
+  .progress-wrap { margin-bottom: 1.5rem; }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+  }
+  .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; }
+
+  /* ── session header ── */
+  .session-header { margin-bottom: 1rem; }
+  .session-header h1 { font-size: 1.4rem; font-weight: 700; line-height: 1.2; margin-bottom: 0.25rem; }
+  .session-header .meta { font-size: 0.8rem; color: var(--muted); }
+  .day-note {
+    margin-top: 0.6rem;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    background: var(--surface);
+    border-left: 3px solid var(--accent);
+    padding: 0.5rem 0.75rem;
+    border-radius: 0 6px 6px 0;
+  }
+
+  /* ── cardio pill ── */
+  .cardio-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+    padding: 0.35rem 0.75rem;
+    background: #1e3a5f;
+    border: 1px solid #2563eb44;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    color: #93c5fd;
+  }
+
+  /* ── sections ── */
+  .section { margin-top: 1.5rem; }
+  .section-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+
+  /* ── superset ── */
+  .superset { margin-bottom: 0.75rem; }
+  .superset-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .superset-group {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .superset-group .ex-card + .ex-card { border-top: 1px solid var(--border); }
+
+  /* ── exercise card ── */
+  .ex-card { padding: 0.75rem; }
+  .ex-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .ex-name { font-size: 0.92rem; font-weight: 600; flex: 1; }
+  .ex-spec { font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+  .ex-sets { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .set-btn {
+    min-width: 52px;
+    padding: 0.45rem 0.6rem;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .set-btn:active { transform: scale(0.94); }
+  .set-btn.done { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+  .ex-meta { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+  .muscle-badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+  }
+  .demo-link {
+    font-size: 0.7rem;
+    color: var(--accent);
+    text-decoration: none;
+    padding: 0.1rem 0.45rem;
+    border: 1px solid var(--accent-dim);
+    border-radius: 999px;
+    transition: all 0.15s;
+  }
+  .demo-link:hover { background: var(--accent-dim); }
+  .ex-cues {
+    margin-top: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    line-height: 1.55;
+    white-space: pre-line;
+  }
+
+  /* ── main exercise card ── */
+  .main-ex {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 0.6rem;
+    padding: 0.75rem;
+  }
+
+  /* ── text block (load notes / cooldown) ── */
+  .text-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .text-block p { margin-bottom: 0.5rem; }
+  .text-block ul, .text-block ol { padding-left: 1.25rem; margin-bottom: 0.5rem; }
+  .text-block li { margin-bottom: 0.2rem; }
+  .text-block strong { color: var(--text); }
+  .text-block code { background: var(--bg); padding: 0.1em 0.3em; border-radius: 3px; font-size: 0.85em; }
+
+  /* ── empty / error ── */
+  .empty { text-align: center; padding: 3rem 0; color: var(--muted); }
+  .empty h2 { font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text-dim); }
+
+  /* ── done banner ── */
+  #done-banner {
+    display: none;
+    position: fixed;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #065f46;
+    border: 1px solid var(--green);
+    color: var(--green);
+    padding: 0.6rem 1.25rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    z-index: 200;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div id="done-banner">All sets done 🎉</div>
+
+<div class="date-nav">
+  <a class="date-arrow" href="/{{ persona }}/workout/{{ prev_day }}/">‹</a>
+  <input type="date" class="date-input" value="{{ target }}"
+         onchange="window.location='/{{ persona }}/workout/' + this.value + '/'">
+  <a class="date-arrow" href="/{{ persona }}/workout/{{ next_day }}/">›</a>
+</div>
+
+{% if error %}
+  <div class="empty">
+    <h2>{{ error }}</h2>
+    <p>Run <code>python coach.py</code> to generate this week's plan.</p>
+  </div>
+
+{% elif not session_info %}
+  <div class="empty">
+    <h2>No session found for this day</h2>
+    <p>Check the week plan for schedule details.</p>
+  </div>
+
+{% elif session_info.session_type in ("Rest / Active Recovery", "Weekly Review") or session_info.focus == "—" %}
+  <div class="session-header">
+    <h1>{{ session_info.session_type }}</h1>
+    <p class="meta">{{ session_info.day }}</p>
+    {% if session_info.notes and session_info.notes != "—" %}
+      <div class="day-note">{{ session_info.notes }}</div>
+    {% endif %}
+  </div>
+
+{% else %}
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span id="progress-text">0 sets done</span>
+      <span id="progress-pct">0%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+
+  <div class="session-header">
+    <h1>{{ session_info.focus }}</h1>
+    <p class="meta">{{ session_info.day }} · {{ session_info.session_type }}</p>
+    {% if session_info.notes and session_info.notes != "—" %}
+      <div class="day-note">{{ session_info.notes }}</div>
+    {% endif %}
+  </div>
+
+  {% if session_info.cardio and session_info.cardio != "—" %}
+    <div class="cardio-pill">🏃 {{ session_info.cardio }}</div>
+  {% endif %}
+
+  {% if routine %}
+    {% set ss_letters = ["A","B","C","D","E"] %}
+
+    {% if routine.warmup %}
+    <div class="section">
+      <div class="section-title">Warm-Up</div>
+      {% for superset in routine.warmup %}
+        {% set ss_idx = loop.index0 %}
+        <div class="superset">
+          <div class="superset-label">Superset {{ ss_letters[ss_idx] }}</div>
+          <div class="superset-group">
+            {% for ex in superset %}
+              {% set ex_idx = loop.index0 %}
+              <div class="ex-card">
+                <div class="ex-header">
+                  <span class="ex-name">{{ ex.name }}</span>
+                  <span class="ex-spec">{% if ex.duration_s is defined %}{{ fmt_duration(ex.duration_s) }}{% else %}{{ ex.sets }}×{{ ex.reps }}{% endif %}</span>
+                </div>
+                {% if ex.muscle or ex.demo_url %}
+                <div class="ex-meta">
+                  {% if ex.muscle %}<span class="muscle-badge">{{ ex.muscle }}</span>{% endif %}
+                  {% if ex.demo_url %}<a class="demo-link" href="{{ ex.demo_url }}" target="_blank" rel="noopener">▶ Demo</a>{% endif %}
+                </div>
+                {% endif %}
+                <div class="ex-sets">
+                  {% for i in range(ex.sets) %}
+                    <button class="set-btn" data-key="w-{{ ss_idx }}-{{ ex_idx }}-{{ i }}">
+                      {% if ex.duration_s is defined %}{{ fmt_duration(ex.duration_s) }}{% else %}Set {{ i + 1 }}{% endif %}
+                    </button>
+                  {% endfor %}
+                </div>
+                {% if ex.clean_notes %}
+                  <div class="ex-cues">{{ ex.clean_notes }}</div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="section">
+      <div class="section-title">Main Work</div>
+      {% for ex in routine.exercises %}
+        {% set ex_idx = loop.index0 %}
+        <div class="main-ex">
+          <div class="ex-header">
+            <span class="ex-name">{{ ex.name }}</span>
+            <span class="ex-spec">
+              {% if ex.duration_s is defined %}{{ ex.sets }}×{{ fmt_duration(ex.duration_s) }}
+              {% elif ex.weight_kg is defined %}{{ ex.sets }}×{{ ex.reps }} @ {{ ex.weight_kg }} kg
+              {% else %}{{ ex.sets }}×{{ ex.reps }}{% endif %}
+            </span>
+          </div>
+          {% if ex.muscle or ex.demo_url %}
+          <div class="ex-meta">
+            {% if ex.muscle %}<span class="muscle-badge">{{ ex.muscle }}</span>{% endif %}
+            {% if ex.demo_url %}<a class="demo-link" href="{{ ex.demo_url }}" target="_blank" rel="noopener">▶ Demo</a>{% endif %}
+          </div>
+          {% endif %}
+          <div class="ex-sets">
+            {% for i in range(ex.sets) %}
+              <button class="set-btn" data-key="e-{{ ex_idx }}-{{ i }}">
+                {% if ex.duration_s is defined %}{{ fmt_duration(ex.duration_s) }}{% else %}Set {{ i + 1 }}{% endif %}
+              </button>
+            {% endfor %}
+          </div>
+          {% if ex.clean_notes %}
+            <div class="ex-cues">{{ ex.clean_notes }}</div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <div class="empty"><p>No matching routine found for "{{ session_info.focus }}".</p></div>
+  {% endif %}
+
+  {% if load_notes %}
+  <div class="section">
+    <div class="section-title">Load Notes</div>
+    <div class="text-block">{{ render_md(load_notes) }}</div>
+  </div>
+  {% endif %}
+
+  {% if cooldown %}
+  <div class="section">
+    <div class="section-title">Cool-Down</div>
+    <div class="text-block">{{ render_md(cooldown) }}</div>
+  </div>
+  {% endif %}
+
+{% endif %}
+
+<script>
+  const STORAGE_KEY = "workout-{{ persona }}-{{ target }}";
+  const state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  const buttons = document.querySelectorAll(".set-btn");
+  const fill = document.getElementById("progress-fill");
+  const progressText = document.getElementById("progress-text");
+  const pctEl = document.getElementById("progress-pct");
+  const banner = document.getElementById("done-banner");
+
+  function updateProgress() {
+    const total = buttons.length;
+    const done = document.querySelectorAll(".set-btn.done").length;
+    if (!total) return;
+    const pct = Math.round((done / total) * 100);
+    if (fill) fill.style.width = pct + "%";
+    if (progressText) progressText.textContent = done + " / " + total + " sets done";
+    if (pctEl) pctEl.textContent = pct + "%";
+    if (banner) banner.style.display = (done === total && total > 0) ? "block" : "none";
+  }
+
+  buttons.forEach(btn => {
+    if (state[btn.dataset.key]) btn.classList.add("done");
+    btn.addEventListener("click", () => {
+      btn.classList.toggle("done");
+      state[btn.dataset.key] = btn.classList.contains("done");
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      updateProgress();
+    });
+  });
+
+  updateProgress();
+</script>
+{% endblock %}

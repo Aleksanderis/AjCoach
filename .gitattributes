@@ -1,0 +1,20 @@
+# Normalize line endings so a working tree shared between the Linux container
+# and a Windows host stays consistent. Text files are stored as LF in the repo
+# and checked out as LF on every platform — this OVERRIDES per-machine
+# core.autocrlf (e.g. Windows autocrlf=true), which is what caused CRLF churn.
+* text=auto eol=lf
+
+# Shell scripts MUST stay LF or they break inside the Linux container.
+*.sh    text eol=lf
+
+# Binary files git must never touch.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.pdf   binary
+*.zip   binary
+*.gz    binary
+*.woff  binary
+*.woff2 binary

@@ -1,0 +1,4 @@
+Date,HRV,SleepScore,RestingHR,TrainingReadiness,ActiveCalories,IntensityMinutes,ActivityCount,Steps,AvgStress,BodyBatteryHigh,BodyBatteryLow,HydrationMl,SleepDurationMin,SleepDeepMin,SleepRemMin,SleepLightMin,SpO2Avg,BreathingRate,WeightKg
+2026-01-05,42.0,70,53,68,420,30,1,8100,25,80,30,2500,420,80,90,250,95.0,15.0,70.5
+2026-01-06,44.0,74,52,71,380,25,1,7600,23,82,32,2500,440,85,95,260,95.0,15.0,70.4
+2026-01-07,43.0,68,54,65,610,55,2,9200,28,75,20,2600,400,75,85,240,94.0,15.0,70.6

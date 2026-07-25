@@ -1,0 +1,35 @@
+services:
+  ajcoach:
+    image: ajcoach:latest
+    container_name: ajcoach
+    ports:
+      - "3001:3001"
+    volumes:
+      # Adjust the host paths below to wherever this repo and its data live on your host.
+      - /path/to/ajcoach-data/claude-config:/home/agent/.claude:rw
+      - /path/to/ajcoach-data/claude-code-ui:/home/agent/.claude-code-ui:rw
+      - /path/to/ajcoach-data/cloudcli-data:/home/agent/.cloudcli:rw
+      - /path/to/ajcoach-data/project-<persona>:/home/agent/AjCoach-<Persona>:rw
+      - /path/to/ajcoach-data/npm-global:/home/agent/.npm-global:rw
+    environment:
+      - HOST=0.0.0.0
+      - SERVER_PORT=3001
+      - PUID=1026
+      - PGID=100
+    restart: unless-stopped
+
+  ajcoach-web:
+    build:
+      context: ./project-<persona>/docker/web
+    container_name: ajcoach-web
+    ports:
+      - "3003:3003"
+    volumes:
+      - /path/to/ajcoach-data/project-<persona>/personas:/personas:ro
+      - /path/to/ajcoach-data/project-<persona>/src:/src:ro
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - COACH_PASSWORD=${COACH_PASSWORD}
+      - DEFAULT_PERSONA=${DEFAULT_PERSONA:-Alex}
+      - SRC_DIR=/src
+    restart: unless-stopped

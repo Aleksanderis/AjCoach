@@ -1,0 +1,47 @@
+services:
+  ajcoach:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: ajcoach
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./npm-global:/home/coach/.npm-global:rw
+      - ./.cloudcli:/home/coach/.cloudcli:rw
+      - ./claude-config:/home/coach/.claude:rw
+      # Project folders (docker/ excluded)
+      - ../.claude:/home/agent/AjCoach/.claude:rw
+      - ../personas:/home/agent/AjCoach/personas:rw
+      - ../src:/home/agent/AjCoach/src:rw
+      # Project root files
+      - ../CLAUDE.md:/home/agent/AjCoach/CLAUDE.md:rw
+      - ../coach.py:/home/agent/AjCoach/coach.py:rw
+      - ../login_garmin.py:/home/agent/AjCoach/login_garmin.py:rw
+      - ../requirements.txt:/home/agent/AjCoach/requirements.txt:rw
+      - ../.mcp.json:/home/agent/AjCoach/.mcp.json:rw
+      - ../.gitignore:/home/agent/AjCoach/.gitignore:rw
+    environment:
+      - HOST=0.0.0.0
+      - SERVER_PORT=3001
+    restart: unless-stopped
+
+  ajcoach-web:
+    build:
+      context: ./web
+    container_name: ajcoach-web
+    ports:
+      - "3002:3002"
+    volumes:
+      - ../personas:/personas:ro
+      - ../src:/src:ro
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - COACH_PASSWORD=${COACH_PASSWORD}
+      - DEFAULT_PERSONA=${DEFAULT_PERSONA:-Alex}
+      - SRC_DIR=/src
+    restart: unless-stopped
+
+volumes:
+  ajcoach-npm:
+  ajcoach-cloudcli:
