@@ -1,0 +1,32 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+src/__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.venv
+env/
+venv/
+
+# Per-persona sensitive data (never commit credentials)
+personas/*/.env
+personas/*/.garmin_tokens/
+
+# Unit test / coverage reports
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+.tmp/**
+.env
+.garmin_tokens/**
+.mcp.json
+docker/claude-config/**
+docker/npm-global
+docker/.cloudcli/**
+docker/ajcoach.tar
