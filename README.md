@@ -4,7 +4,8 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![Built with Claude Code](https://img.shields.io/badge/built%20with-Claude%20Code-blueviolet?logo=anthropic&logoColor=white)](https://claude.ai/code)
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-yellow?logo=buymeacoffee&logoColor=white)](https://buymeacoffee.com/aleksanderis)
+
+<a href="https://www.buymeacoffee.com/aleksanderis"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="40"></a>
 
 ---
 
@@ -95,22 +96,40 @@ See [`CLAUDE.md`](CLAUDE.md) for the full skill reference, file structure, and c
 - 🟡 **Yellow** — 1–2 mild flags → same load, −10–20% volume
 - 🔴 **Red** — 2+ significant flags → −15%+ load, swap high-axial lifts, add mobility
 
+## Running with Docker
+
+The `docker/` directory contains a compose setup that runs AjCoach inside a container with [cloudcli](https://github.com/cloudcli-ai/cloudcli) — a browser-based web UI for Claude Code CLI. Useful for NAS / home-server deployments where you want to access the coach from any device without a local Claude Code install.
+
+```
+docker/
+├── Dockerfile               # Extends claude-code sandbox image, adds Python + cloudcli
+├── docker-compose.yml       # Linux/Mac
+├── docker-compose-win.yml   # Windows host path variant
+└── entrypoint.sh
+```
+
+1. Build the image:
+   ```bash
+   docker build -f docker/Dockerfile -t ajcoach:latest .
+   ```
+2. Edit path placeholders in `docker/docker-compose.yml`, then:
+   ```bash
+   docker compose -f docker/docker-compose.yml up -d
+   ```
+3. Open `http://<host>:3001` — Claude Code web UI served by cloudcli.
+
 ## Requirements
 
 - Python 3.10+
-- [Claude Code](https://claude.ai/code) (for skills)
+- [Claude Code](https://claude.ai/code) CLI (or Docker + cloudcli for headless use)
 - Garmin Connect account with a compatible device
 - [Hevy](https://www.hevyapp.com/) account + API key
 
-Install dependencies:
+Install Python dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
 ## Support
 
-If you find this useful, you can [buy me a coffee ☕](https://buymeacoffee.com/aleksanderis)
-
-## License
-
-MIT
+If you find this useful — <a href="https://www.buymeacoffee.com/aleksanderis">buy me a coffee ☕</a>
