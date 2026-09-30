@@ -52,7 +52,7 @@ python coach.py   ← REQUIRED: sync Garmin, generate YYYY-MM-DD_data.md
 ## Skill Reference
 
 | Skill | When | Writes |
-|---|---|---|
+| --- | --- | --- |
 | `/create-plan` | New season / goals / injury | `current_plan.md` + `week_YYYY-MM-DD.md` + Hevy routines (via hevy_service.py) |
 | `/weekly-review` | Every Sunday | `week_YYYY-MM-DD.md` (+ Hevy via hevy_service.py if exercises change) |
 | `/sync-hevy` | After editing `setup_hevy.py` | Pushes updated routines to Hevy via hevy_service.py |
@@ -89,7 +89,7 @@ personas/<name>/
 ## Recovery Assessment Rules
 
 | Signal | Flag threshold |
-|---|---|
+| --- | --- |
 | HRV | Delta > −15% vs 7d avg = significant stress |
 | Sleep Score | < 60 = poor |
 | Training Readiness | < 40 = red flag |
@@ -122,6 +122,7 @@ Hevy is managed via `src/hevy_service.py` — a direct API CLI (no MCP). Claude 
 Routines are only updated when exercises actually change (new phase, injury swap, plan update) — not before every session.
 
 **Baseline weight changes vs. temporary load adjustments — these are handled differently:**
+
 - **Baseline changes** (a progression is confirmed clean, or a working weight is corrected downward due to a persistent issue) are permanent until the next baseline change. **Push these to Hevy immediately**: edit `setup_hevy.py` with the new `weight_kg` and run `sync-routines` the same session the decision is made. Do not leave a confirmed baseline sitting only in a coaching report — the persona opens Hevy expecting to see their real current working weight.
 - **Yellow/Red-day reductions** (temporary, tied to today's recovery status only, load returns to baseline next clean session) stay in the coaching report only — do not sync these to Hevy.
 
@@ -132,7 +133,7 @@ Routines are only updated when exercises actually change (new phase, injury swap
 ## Key File Reference
 
 | File | Purpose |
-|---|---|
+| --- | --- |
 | `personas/<name>/profile.md` | Full athlete profile, HR zones, Section 6 protocols |
 | `personas/<name>/program/current_plan.md` | Seasonal goals and program phases |
 | `personas/<name>/program/nutrition_plan.md` | Nutrition/fat-loss protocol, weekly eating plan, shopping list, meal prep (if a nutrition goal exists) |
