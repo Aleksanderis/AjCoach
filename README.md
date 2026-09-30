@@ -1,48 +1,116 @@
 # AjCoach 🏀🏋️‍♂️
 
-An adaptive strength & conditioning coach that pulls your Garmin biometrics (HRV, sleep,
-resting HR, training readiness) and uses them to guide daily training decisions:
-traffic-light recovery status, load adjustments, and exercise swaps. Implemented as a
-set of Claude Code skills plus a small Python data pipeline. Workout routines live in
-[Hevy](https://www.hevyapp.com/) as stable templates; you train by opening Hevy, not by
-asking the AI what to do every session.
+**Adaptive strength & conditioning coaching powered by your Garmin biometrics and Claude Code.**
+
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![Built with Claude Code](https://img.shields.io/badge/built%20with-Claude%20Code-blueviolet?logo=anthropic&logoColor=white)](https://claude.ai/code)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-yellow?logo=buymeacoffee&logoColor=white)](https://buymeacoffee.com/aleksanderis)
+
+---
+
+AjCoach pulls your Garmin biometrics — HRV, sleep score, resting HR, and training readiness — and uses them to guide daily training decisions: traffic-light recovery status, load adjustments, and exercise swaps. Implemented as a set of [Claude Code](https://claude.ai/code) skills plus a small Python data pipeline.
+
+Workout routines live in [Hevy](https://www.hevyapp.com/) as stable templates. You train by opening Hevy; the AI guides load and recovery decisions, not every rep.
+
+## Features
+
+- **Recovery-driven traffic light** — 🟢 / 🟡 / 🔴 assessment from 7-day rolling Garmin averages before every session
+- **Auto-deload** — HRV drop, poor sleep, or low training readiness automatically reduces load/volume and swaps high-axial exercises for joint-friendly alternatives
+- **Hevy integration** — routines pushed directly to Hevy via API; open the app and train, no manual setup
+- **Multi-persona** — one repo, one folder per athlete; useful for coaches managing multiple athletes
+- **Nutrition planning** — optional fat-loss/nutrition protocol alongside the training plan
+- **Claude Code skills** — `/pre-workout`, `/post-workout`, `/weekly-review`, `/create-plan`, `/review-activity`, `/sync-hevy`
 
 ## Quick Start
 
-1. **Create a persona:** copy `personas/Alex/` to `personas/<YourName>/` and fill in
-   `profile.md` with your own details (sport, HR zones, medical constraints).
-2. **Set up credentials:** copy `personas/<YourName>/.env.example` (if present) or create
-   `personas/<YourName>/.env` with your `GARMIN_EMAIL`, `GARMIN_PASSWORD`, and
-   `HEVY_API_KEY`. This file is gitignored, never commit it.
-3. **Authenticate Garmin:** run `python login_garmin.py` once to save your session tokens
-   to `personas/<YourName>/.garmin_tokens/` (also gitignored).
-4. **Generate your program:** in Claude Code, run `/create-plan` to set your goals and
-   have Claude write `program/current_plan.md`, this week's schedule, and push your
-   routines to Hevy.
-5. **Sync data on demand:** run `python coach.py --persona <YourName>` to sync Garmin and
-   generate a data snapshot, or just use `/pre-workout`, `/post-workout`, or
-   `/review-activity`; they run the sync for you.
+1. **Create a persona** — copy `personas/Alex/` to `personas/<YourName>/` and fill in `profile.md` with your sport, HR zones, and medical constraints.
+2. **Set credentials** — create `personas/<YourName>/.env` with:
+   ```
+   GARMIN_EMAIL=you@example.com
+   GARMIN_PASSWORD=yourpassword
+   HEVY_API_KEY=your_hevy_key
+   ```
+   This file is gitignored — never commit it.
+3. **Authenticate Garmin** — run once to save session tokens:
+   ```bash
+   python login_garmin.py
+   ```
+4. **Generate your program** — in Claude Code, run `/create-plan` to set goals and have Claude write your training plan and push routines to Hevy.
+5. **Sync data on demand** — run before any coaching session:
+   ```bash
+   python coach.py --persona <YourName>
+   ```
+   Or just invoke a skill — `/pre-workout`, `/post-workout`, `/review-activity` run the sync for you.
 
-See `CLAUDE.md` for the full skill reference, file structure, and coaching protocols.
+See [`CLAUDE.md`](CLAUDE.md) for the full skill reference, file structure, and coaching protocols.
 
 ## Project Structure
 
-- `coach.py`: syncs Garmin data and generates today's data snapshot.
-- `src/report.py`: builds the markdown data snapshot from synced Garmin data.
-- `src/garmin_service.py`: Garmin Connect sync (biometrics + activities).
-- `src/hevy_service.py`: direct Hevy API CLI (routines, folders, exercise history).
-- `src/setup_hevy.py` / `personas/<name>/setup_hevy.py`: source of truth for each
-  persona's Hevy routine structure (exercises, warm-ups, sets, reps, starting weights).
-- `personas/<name>/`: one folder per athlete, profile, program, synced stats, and
-  coaching reports. See `CLAUDE.md` for the full layout.
-- `.claude/skills/`: the `/create-plan`, `/weekly-review`, `/pre-workout`,
-  `/post-workout`, `/review-activity`, and `/sync-hevy` skills.
+```
+.
+├── coach.py                  # Garmin sync + data snapshot entry point
+├── login_garmin.py           # One-time Garmin auth
+├── requirements.txt
+├── src/
+│   ├── report.py             # Builds markdown data snapshot from synced Garmin data
+│   ├── garmin_service.py     # Garmin Connect sync (biometrics + activities)
+│   ├── hevy_service.py       # Direct Hevy API CLI (routines, history)
+│   ├── setup_hevy.py         # Hevy routine loader (imports persona-specific setup)
+│   └── custom_exercise_templates.md
+├── personas/
+│   └── <name>/
+│       ├── profile.md        # Athlete profile, HR zones, protocols
+│       ├── setup_hevy.py     # Routine structure (exercises, sets, weights)
+│       ├── .env              # Credentials (gitignored)
+│       ├── stats/            # Synced Garmin CSVs
+│       ├── program/          # current_plan.md, week schedules, nutrition plan
+│       └── reports/          # YYYY-MM-DD_data.md + coaching reports
+└── .claude/
+    └── skills/               # /create-plan, /weekly-review, /pre-workout, etc.
+```
 
-## Core Principles
+## Skill Reference
 
-- **Auto-Deload:** if HRV, sleep score, or training readiness drops significantly, the
-  coach reduces load/volume and swaps high-axial exercises for joint-friendly alternatives.
-- **Recovery-Driven:** every session starts from a traffic-light recovery assessment
-  (🟢/🟡/🔴) computed from 7-day rolling Garmin averages.
-- **Stable Routines:** Hevy routines are templates you follow directly. The AI adjusts
-  guidance around them, not the routines themselves, on every session.
+| Skill | When to use | Output |
+|---|---|---|
+| `/create-plan` | New season, goals change, injury | `current_plan.md` + week schedule + Hevy routines |
+| `/weekly-review` | Every Sunday | Next week's schedule; Hevy update if exercises change |
+| `/pre-workout` | Before a session | `YYYY-MM-DD_coaching.md` with traffic light + load guidance |
+| `/post-workout` | After a session | Appends session review to coaching report |
+| `/review-activity` | Any time | Ad-hoc answer about Garmin stats, trends, or activities |
+| `/sync-hevy` | After editing `setup_hevy.py` | Pushes updated routines to Hevy |
+
+## Recovery Traffic Light
+
+| Signal | Flag threshold |
+|---|---|
+| HRV | Drop > 15% vs 7-day average |
+| Sleep Score | < 60 |
+| Training Readiness | < 40 |
+| Resting HR | > 5% above 7-day average |
+| High-intensity activity | Only flagged within last 48 h |
+| Subjective pain | > 3/10 or acute joint mention |
+
+- 🟢 **Green** — all nominal → full planned load
+- 🟡 **Yellow** — 1–2 mild flags → same load, −10–20% volume
+- 🔴 **Red** — 2+ significant flags → −15%+ load, swap high-axial lifts, add mobility
+
+## Requirements
+
+- Python 3.10+
+- [Claude Code](https://claude.ai/code) (for skills)
+- Garmin Connect account with a compatible device
+- [Hevy](https://www.hevyapp.com/) account + API key
+
+Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+## Support
+
+If you find this useful, you can [buy me a coffee ☕](https://buymeacoffee.com/aleksanderis)
+
+## License
+
+MIT
